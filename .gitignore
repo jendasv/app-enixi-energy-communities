@@ -24,5 +24,6 @@ Homestead.yaml
 Thumbs.db
 
 # Assignment briefing material — not part of the deliverable
+/Claude.md
 /CLAUDE_application_project.md
 /laravel-challenge-energy-communities.pdf
