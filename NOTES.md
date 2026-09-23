@@ -133,18 +133,19 @@ surface as 409, not a silent overwrite or a 500.
    oversight.
 2. **`meter_points.grid_operator_id`** as a real FK — see the data model section above
    for the migration path.
-3. ~~A second BR-8 concurrency test for the "existing blocking registration" case.~~
-   Done: `RegistrationConcurrencyTest` now covers both the gap-lock case (a meter
-   point's first registration) and the standard row-lock case (an existing accepted
-   registration already there).
-4. ~~Pint run and a final `php artisan test` pass before packaging.~~ Done: Pint fixed
-   two files (an unused import, some formatting), all tests still pass afterwards.
-   Laravel's default boilerplate tests (`tests/Feature/ExampleTest.php`,
-   `tests/Unit/ExampleTest.php`) removed — they didn't test anything about this domain.
-5. Larastan was never installed or run — not in `composer.json`'s dev dependencies by
-   default, and I didn't add it. `Model::shouldBeStrict()` is on outside production, which
-   caught at least one real bug during development (see the `users.is_admin` note in
-   `Overview.md`), but that's a runtime check, not static analysis.
+3. **Larastan** was never installed or run — not in `composer.json`'s dev dependencies by
+   default, and I didn't add it. `Model::shouldBeStrict()` is on outside production
+   instead, and it did catch one real bug along the way: `users.is_admin` has a DB-level
+   default (`false`) that a freshly-created model doesn't know about until it's re-fetched,
+   which threw a `MissingAttributeException` the first time a test read `$user->is_admin`
+   right after `factory()->create()`. Fixed by mirroring the default in the model
+   (`protected $attributes = ['is_admin' => false]`). That's a runtime check catching a
+   real gap, though — not a substitute for static analysis.
+
+Already resolved during the exercise, not left over: a second BR-8 concurrency test for
+the "existing blocking registration" case (see the BR-8 section above — both cases are
+covered now), and Pint plus a final `php artisan test` pass (two files fixed, Laravel's
+unused `tests/Feature/ExampleTest.php` / `tests/Unit/ExampleTest.php` boilerplate removed).
 
 ## The submission checklist's clean-state requirement — actually verified, not assumed
 
@@ -159,8 +160,8 @@ with "Test directory tests/Unit not found," before a single test ran — which w
 sunk the whole test suite in review despite 63 passing tests in my own environment.
 Fixed by dropping the empty `Unit` testsuite from `phpunit.xml` (there are no unit tests
 in this project; everything is a Feature test against the real API). Re-verified against
-the same fresh clone afterwards — 64/64 passing (two more than the number above once the
-second BR-8 concurrency test landed).
+the same fresh clone afterwards, and again once more after the second BR-8 concurrency
+test was added — 64/64 passing.
 
 ## Seeder and Postman collection (not requested by the assignment)
 
