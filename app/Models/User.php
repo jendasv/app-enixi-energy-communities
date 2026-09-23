@@ -40,6 +40,18 @@ class User extends Authenticatable
     ];
 
     /**
+     * Mirrors the migration's DB-level default. Without this, a freshly
+     * created model never learns the column exists until it's re-fetched —
+     * strict mode (see AppServiceProvider) then throws on ->is_admin instead
+     * of silently returning null.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'is_admin' => false,
+    ];
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
