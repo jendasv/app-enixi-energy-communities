@@ -36,7 +36,10 @@ class MeterPointController extends Controller
             $query->where('energy_direction', $request->string('energy_direction'));
         }
 
-        return MeterPointResource::collection($query->paginate());
+        // Explicit order: without one, row order across pages is undefined and
+        // can shift between requests under concurrent writes (duplicate or
+        // skipped rows for a client paging through results).
+        return MeterPointResource::collection($query->orderBy('id')->paginate());
     }
 
     /**

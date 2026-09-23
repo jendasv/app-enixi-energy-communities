@@ -12,7 +12,6 @@ use App\Http\Requests\TransitionRegistrationRequest;
 use App\Http\Resources\EnergyCommunityMeterPointResource;
 use App\Models\EnergyCommunity;
 use App\Models\EnergyCommunityMeterPoint;
-use App\Models\MeterPoint;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -34,7 +33,9 @@ class RegistrationController extends Controller
     ): EnergyCommunityMeterPointResource {
         $registration = $action->handle(
             $energyCommunity,
-            MeterPoint::findOrFail($request->validated('meter_point_id')),
+            // Reuses the Form Request's own memoized lookup instead of a second
+            // query — it already had to load this row for the BR-6 membership check.
+            $request->meterPoint(),
             CarbonImmutable::parse($request->validated('from_date')),
             $request->validated('to_date') ? CarbonImmutable::parse($request->validated('to_date')) : null,
             CarbonImmutable::parse($request->validated('consent_date')),
@@ -64,7 +65,8 @@ class RegistrationController extends Controller
             $query->where('state', $request->string('state'));
         }
 
-        return EnergyCommunityMeterPointResource::collection($query->paginate());
+        // See MeterPointController::index() for why this is explicit.
+        return EnergyCommunityMeterPointResource::collection($query->orderBy('id')->paginate());
     }
 
     /**

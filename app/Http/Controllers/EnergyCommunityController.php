@@ -42,7 +42,8 @@ class EnergyCommunityController extends Controller
             $query->where('state', $request->string('state'));
         }
 
-        return EnergyCommunityResource::collection($query->paginate());
+        // See MeterPointController::index() for why this is explicit.
+        return EnergyCommunityResource::collection($query->orderBy('id')->paginate());
     }
 
     /**
