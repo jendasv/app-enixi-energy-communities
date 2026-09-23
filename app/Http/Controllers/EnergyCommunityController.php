@@ -13,11 +13,13 @@ use App\Http\Requests\RejectEnergyCommunityRequest;
 use App\Http\Requests\StoreEnergyCommunityRequest;
 use App\Http\Resources\EnergyCommunityResource;
 use App\Models\EnergyCommunity;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class EnergyCommunityController extends Controller
 {
@@ -66,19 +68,27 @@ class EnergyCommunityController extends Controller
      */
     public function store(StoreEnergyCommunityRequest $request): EnergyCommunityResource
     {
-        $community = DB::transaction(function () use ($request) {
-            $community = EnergyCommunity::create([
-                'ecid' => $request->validated('ecid'),
-                'name' => $request->validated('name'),
-                'state' => EnergyCommunityState::New,
-            ]);
+        try {
+            $community = DB::transaction(function () use ($request) {
+                $community = EnergyCommunity::create([
+                    'ecid' => $request->validated('ecid'),
+                    'name' => $request->validated('name'),
+                    'state' => EnergyCommunityState::New,
+                ]);
 
-            $community->users()->attach($request->user()->id, [
-                'role' => CommunityRole::Manager,
-            ]);
+                $community->users()->attach($request->user()->id, [
+                    'role' => CommunityRole::Manager,
+                ]);
 
-            return $community;
-        });
+                return $community;
+            });
+        } catch (UniqueConstraintViolationException) {
+            // Same race as MeterPointController::store(): two requests can both
+            // pass the `unique` validation rule before either writes.
+            throw ValidationException::withMessages([
+                'ecid' => ['This ecid is already registered.'],
+            ]);
+        }
 
         return new EnergyCommunityResource($community);
     }
@@ -90,9 +100,18 @@ class EnergyCommunityController extends Controller
      */
     public function addUser(AddEnergyCommunityUserRequest $request, EnergyCommunity $energyCommunity): JsonResponse
     {
-        $energyCommunity->users()->attach($request->validated('user_id'), [
-            'role' => $request->validated('role'),
-        ]);
+        try {
+            $energyCommunity->users()->attach($request->validated('user_id'), [
+                'role' => $request->validated('role'),
+            ]);
+        } catch (UniqueConstraintViolationException) {
+            // BR-4's scoped-unique validation rule has the same TOCTOU race as
+            // the two above — two requests adding the same user before either
+            // commits both pass validation.
+            throw ValidationException::withMessages([
+                'user_id' => ['This user is already a member of the community.'],
+            ]);
+        }
 
         return response()->json(['message' => 'User added to the community.'], 201);
     }
