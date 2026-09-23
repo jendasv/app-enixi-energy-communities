@@ -23,6 +23,10 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 
+# Postman desktop app's local workspace sync metadata — not our content
+/postman/.postman
+/postman/postman
+
 # Assignment briefing material — not part of the deliverable
 /Claude.md
 /Plan.md
