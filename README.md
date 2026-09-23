@@ -84,6 +84,23 @@ FORWARD_DB_PORT=13306
 Containers still reach each other over their internal default ports regardless of this
 override — it only affects access from the host machine.
 
+## Trying the API with Postman
+
+`postman/` has a collection and a matching environment covering all endpoints, pre-filled
+with request bodies that work against the seeded data (`database/seeders/DatabaseSeeder.php`
+— four users, all with password `password`: `admin@example.com`, `manager@example.com`,
+`member@example.com`, `owner@example.com`).
+
+1. Import both `postman/Energy-Communities-API.postman_collection.json` and
+   `postman/Energy-Communities-API.postman_environment.json`, and select the environment.
+2. Run each of the four requests in **Auth** once — their test scripts write the returned
+   token into the environment (`manager_token`, `owner_token`, ...), which every other
+   request references.
+3. The rest of the collection is grouped by resource and works from a fresh `make install`
+   without any other setup. A couple of requests demonstrate an expected failure on purpose
+   (activating a community without an accepted generation registration, BR-12) — that's the
+   point, not a bug.
+
 ## License
 
 Laravel is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).

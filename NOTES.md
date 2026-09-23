@@ -3,9 +3,8 @@
 ## How far I got
 
 All of P1 (Foundation), P2 (Registrations — the core), and P3 (Community lifecycle) are
-built, tested, and pushed. 57 tests, all green, run against real MariaDB (not SQLite) —
-`make test` / `./vendor/bin/sail test`. Nothing from OPT was attempted; ran out of
-runway before getting there.
+built, tested, and pushed. 63 tests, all green, run against real MariaDB (not SQLite) —
+`make test` / `./vendor/bin/sail test`.
 
 - **P1**: `POST /api/login`, `POST/GET /api/meter-points`,
   `POST/GET /api/energy-communities`, `GET /api/energy-communities/{id}`,
@@ -14,6 +13,11 @@ runway before getting there.
   `POST /api/registrations/{id}/transition`, `DELETE /api/registrations/{id}`.
 - **P3**: `POST /api/energy-communities/{id}/activate`,
   `POST /api/energy-communities/{id}/reject`.
+- **OPT**: the `ec:registrations {ecid} {--date=}` Artisan command, and the
+  `accepted`-reached event with its queued listener. The OpenAPI description was
+  deliberately skipped — not for lack of time, a conscious call to spend the remaining
+  time on a domain seeder and a Postman collection instead (not requested by the
+  assignment, but useful for manually exercising the API before submission).
 
 ## Key decisions
 
@@ -121,8 +125,8 @@ surface as 409, not a silent overwrite or a 500.
 
 ## What's missing / what I'd do next, prioritized
 
-1. **OPT items** — none attempted: the `ec:registrations` Artisan command, the
-   `accepted`-reached event + queued listener, OpenAPI description.
+1. **OpenAPI description** — the one OPT item not attempted; a conscious trade-off
+   against the seeder/Postman collection, not an oversight.
 2. **`meter_points.grid_operator_id`** as a real FK — see the data model section above
    for the migration path.
 3. A second BR-8 concurrency test for the "existing blocking registration" case (the
@@ -130,10 +134,23 @@ surface as 409, not a silent overwrite or a 500.
    the one I was actually unsure about, so I spent the time there; the standard row-lock
    case is lower-risk but still untested end-to-end under real concurrency.
 4. ~~Pint run and a final `php artisan test` pass before packaging.~~ Done: Pint fixed
-   two files (an unused import, some formatting), all 55 tests still pass afterwards.
+   two files (an unused import, some formatting), all tests still pass afterwards.
    Laravel's default boilerplate tests (`tests/Feature/ExampleTest.php`,
    `tests/Unit/ExampleTest.php`) removed — they didn't test anything about this domain.
 5. Larastan was never installed or run — not in `composer.json`'s dev dependencies by
    default, and I didn't add it. `Model::shouldBeStrict()` is on outside production, which
    caught at least one real bug during development (see the `users.is_admin` note in
    `Overview.md`), but that's a runtime check, not static analysis.
+
+## Seeder and Postman collection (not requested by the assignment)
+
+`database/seeders/DatabaseSeeder.php` seeds fixed, known data — not random factories —
+so it's reproducible: 4 users (`admin@example.com`, `manager@example.com`,
+`member@example.com`, `owner@example.com`, all password `password`), 2 grid operators,
+3 metering points, 3 energy communities spanning all three `EnergyCommunityState`
+values, and 3 registrations spanning `new`/`requested`/`accepted`.
+
+`postman/` has a matching Postman collection and environment (see the README's "Trying
+the API with Postman" section) — every request was run once by hand against the seeded
+data to confirm it returns what it claims to before committing it, not just written and
+assumed correct.
