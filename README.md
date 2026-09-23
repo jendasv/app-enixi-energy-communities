@@ -29,23 +29,28 @@ dependencies are installed through a disposable Composer container.
 make install
 ```
 
-This copies `.env.example` to `.env` if there isn't one yet, installs PHP dependencies,
-brings the containers up, generates the app key, and runs migrations + seeders. The API is
-then available at http://localhost.
+That one command does everything needed to go from a fresh checkout to a running API:
 
-Once installed, start the containers again any time with:
+1. Copies `.env.example` to `.env` if there isn't one yet.
+2. Installs PHP dependencies via a disposable `laravelsail/php83-composer` container — no
+   local PHP or Composer required.
+3. Brings up the containers (`laravel.test` on PHP 8.3, `mariadb` running MariaDB 11).
+4. Generates the app key (`artisan key:generate`).
+5. Runs migrations and seeds the database (`artisan migrate --seed`) — creates all tables
+   and a small fixed dataset (grid operators, users, metering points, energy communities in
+   various states) described in `database/seeders/DatabaseSeeder.php`.
+
+The API is then available at http://localhost. The database itself isn't something you need
+to set up separately — the `mariadb` service in `compose.yaml` and the `DB_*` variables in
+`.env.example` already point the app at it (host `mariadb`, database `laravel`, user `sail`).
+
+Once installed, start the containers again any time (without repeating the steps above) with:
 
 ```bash
 make up
 ```
 
-Run the test suite with:
-
-```bash
-make test
-```
-
-Stop the containers with `./vendor/bin/sail down` (add `-v` to also drop the database volume).
+Stop them with `./vendor/bin/sail down` (add `-v` to also drop the database volume).
 
 <details>
 <summary>Equivalent commands, if you'd rather not use <code>make</code></summary>
@@ -65,24 +70,40 @@ docker run --rm \
 ./vendor/bin/sail up -d
 ./vendor/bin/sail artisan key:generate
 ./vendor/bin/sail artisan migrate --seed
-./vendor/bin/sail test
 ```
 
 </details>
 
-### Port conflicts
+### Migrations
 
-Sail binds MariaDB to host port 3306 and the app to host port 80 by default. If either is
-already taken by another local service (e.g. a native MySQL/MariaDB install), override it in
-`.env` before running `sail up`:
+`make install` already runs migrations and seeds the database, but while working on the
+project you'll often want to re-run them directly:
 
-```dotenv
-APP_PORT=8000
-FORWARD_DB_PORT=13306
+```bash
+./vendor/bin/sail artisan migrate           # apply any new migrations
+./vendor/bin/sail artisan migrate:fresh     # drop every table and re-run all migrations
+./vendor/bin/sail artisan migrate:fresh --seed   # same, plus reseed the fixed dataset
 ```
 
-Containers still reach each other over their internal default ports regardless of this
-override — it only affects access from the host machine.
+`migrate:fresh --seed` is the quickest way back to a known-good state — useful after manually
+testing writes through Postman or the API directly.
+
+## Running tests
+
+```bash
+make test
+```
+
+Tests run against a real MariaDB database (a separate `testing` database on the same
+container, configured in `phpunit.xml`), not SQLite — constraint behaviour (foreign keys,
+check constraints, unique indexes) needs to be real for BR-7/BR-8 to mean anything.
+
+To run a single test file or a subset by name, use `sail artisan test` directly instead:
+
+```bash
+./vendor/bin/sail artisan test tests/Feature/RegistrationTest.php
+./vendor/bin/sail artisan test --filter=test_br7_open_ended_accepted_registration_blocks_a_later_overlapping_one
+```
 
 ## Trying the API with Postman
 
