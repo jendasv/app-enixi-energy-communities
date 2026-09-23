@@ -26,10 +26,35 @@ Requirements: Docker and Docker Compose. No local PHP or Composer installation i
 dependencies are installed through a disposable Composer container.
 
 ```bash
+make install
+```
+
+This copies `.env.example` to `.env` if there isn't one yet, installs PHP dependencies,
+brings the containers up, generates the app key, and runs migrations + seeders. The API is
+then available at http://localhost.
+
+Once installed, start the containers again any time with:
+
+```bash
+make up
+```
+
+Run the test suite with:
+
+```bash
+make test
+```
+
+Stop the containers with `./vendor/bin/sail down` (add `-v` to also drop the database volume).
+
+<details>
+<summary>Equivalent commands, if you'd rather not use <code>make</code></summary>
+
+```bash
 cp .env.example .env
 
-# Install PHP dependencies (skip this if you already have PHP 8.2+/Composer locally
-# and prefer to just run `composer install` instead)
+# Skip this step if you already have PHP 8.2+/Composer locally and prefer
+# to just run `composer install` instead.
 docker run --rm \
     -u "$(id -u):$(id -g)" \
     -v "$(pwd):/opt" \
@@ -40,17 +65,10 @@ docker run --rm \
 ./vendor/bin/sail up -d
 ./vendor/bin/sail artisan key:generate
 ./vendor/bin/sail artisan migrate --seed
-```
-
-The API is then available at http://localhost.
-
-Run the test suite with:
-
-```bash
 ./vendor/bin/sail test
 ```
 
-Stop the containers with `./vendor/bin/sail down` (add `-v` to also drop the database volume).
+</details>
 
 ### Port conflicts
 
