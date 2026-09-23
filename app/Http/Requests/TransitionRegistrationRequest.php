@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\EnergyCommunityMeterPointState;
+use App\Models\EnergyCommunityMeterPoint;
 use Illuminate\Contracts\Validation\Validator as ValidatorContract;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -41,7 +42,7 @@ class TransitionRegistrationRequest extends FormRequest
                 return;
             }
 
-            /** @var \App\Models\EnergyCommunityMeterPoint $registration */
+            /** @var EnergyCommunityMeterPoint $registration */
             $registration = $this->route('registration');
             $target = EnergyCommunityMeterPointState::from($this->string('state')->value());
 
