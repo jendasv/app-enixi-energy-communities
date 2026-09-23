@@ -15,7 +15,7 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 /**
  * BR-5 through BR-8: registers a metering point into a community. The
  * overlap check (BR-7) and the write happen in one locked transaction
- * (BR-8) — see Claude.md for what guarantee this actually gives on
+ * (BR-8) — see NOTES.md for what guarantee this actually gives on
  * MariaDB/InnoDB and its gap-locking limits for a meter point's first
  * registration.
  */

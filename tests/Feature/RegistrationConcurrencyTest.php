@@ -18,7 +18,7 @@ use Tests\TestCase;
 
 /**
  * BR-8: verifies the actual DB guarantee for the gap in
- * RegisterMeterPointIntoCommunity noted in Claude.md/NOTES.md — a meter
+ * RegisterMeterPointIntoCommunity noted in NOTES.md — a meter
  * point's *first* registration has no existing blocking row for
  * lockForUpdate() to lock, so the protection has to come from InnoDB's gap
  * locking on the (meter_point_id, state) index range, not from locking rows
