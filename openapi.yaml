@@ -1,0 +1,452 @@
+openapi: 3.0.3
+info:
+  title: Energy Communities API
+  version: "1.0"
+  description: >
+    Energy communities, metering points, and the registrations that connect them.
+    See NOTES.md for the business-rule reasoning behind the shapes below.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+  - url: http://localhost
+    description: Local (Sail) — see README.md "Getting started"
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Auth
+  - name: Meter Points
+  - name: Energy Communities
+  - name: Registrations
+
+paths:
+  /api/login:
+    post:
+      tags: [Auth]
+      summary: Log in and obtain a Sanctum token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, format: password }
+      responses:
+        "200":
+          description: Token issued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /api/meter-points:
+    post:
+      tags: [Meter Points]
+      summary: Register a metering point of the caller's own (BR-1, BR-2)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, energy_direction]
+              properties:
+                name:
+                  type: string
+                  minLength: 33
+                  maxLength: 33
+                  description: Uppercase letters and digits only. First 8 characters must match a known grid_operators.identifier (BR-1).
+                energy_direction:
+                  $ref: "#/components/schemas/EnergyDirection"
+      responses:
+        "201":
+          description: Metering point registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: "#/components/schemas/MeterPoint" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    get:
+      tags: [Meter Points]
+      summary: List metering points (own; admins see all) — BR-2, BR-11
+      parameters:
+        - name: energy_direction
+          in: query
+          required: false
+          schema: { $ref: "#/components/schemas/EnergyDirection" }
+      responses:
+        "200":
+          description: Paginated list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeterPointCollection"
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+
+  /api/energy-communities:
+    post:
+      tags: [Energy Communities]
+      summary: Create a community — caller becomes manager atomically, state starts at new (BR-3)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ecid]
+              properties:
+                ecid: { type: string, description: "No format validation required." }
+                name: { type: string, nullable: true }
+      responses:
+        "201":
+          description: Community created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: "#/components/schemas/EnergyCommunity" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    get:
+      tags: [Energy Communities]
+      summary: List communities — scoped to membership unless admin, filterable by state (BR-11)
+      parameters:
+        - name: state
+          in: query
+          required: false
+          schema: { $ref: "#/components/schemas/EnergyCommunityState" }
+      responses:
+        "200":
+          description: Paginated list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnergyCommunityCollection"
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+
+  /api/energy-communities/{energyCommunity}:
+    get:
+      tags: [Energy Communities]
+      summary: Show a community — members and admins only
+      parameters:
+        - $ref: "#/components/parameters/EnergyCommunityId"
+      responses:
+        "200":
+          description: The community
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: "#/components/schemas/EnergyCommunity" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404":
+          description: Not a member and not an admin — a visibility 404, not a permission 403.
+
+  /api/energy-communities/{energyCommunity}/users:
+    post:
+      tags: [Energy Communities]
+      summary: Add a user with a role — manager or admin only (BR-4)
+      parameters:
+        - $ref: "#/components/parameters/EnergyCommunityId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id, role]
+              properties:
+                user_id: { type: integer }
+                role: { $ref: "#/components/schemas/CommunityRole" }
+      responses:
+        "201": { description: User added }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/energy-communities/{energyCommunity}/meter-points:
+    post:
+      tags: [Registrations]
+      summary: Register a metering point into a community (BR-5 through BR-8) — the core of the exercise
+      parameters:
+        - $ref: "#/components/parameters/EnergyCommunityId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [meter_point_id, from_date, consent_date]
+              properties:
+                meter_point_id: { type: integer }
+                from_date: { type: string, format: date }
+                to_date: { type: string, format: date, nullable: true, description: "null = open ended" }
+                consent_date: { type: string, format: date, description: "Must not be in the future (BR-6)." }
+      responses:
+        "201":
+          description: Registration created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: "#/components/schemas/Registration" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409":
+          description: BR-7 — overlaps an existing blocking registration for this metering point.
+        "422": { $ref: "#/components/responses/ValidationError" }
+    get:
+      tags: [Registrations]
+      summary: List a community's registrations, filterable by state
+      parameters:
+        - $ref: "#/components/parameters/EnergyCommunityId"
+        - name: state
+          in: query
+          required: false
+          schema: { $ref: "#/components/schemas/EnergyCommunityMeterPointState" }
+      responses:
+        "200":
+          description: Paginated list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistrationCollection"
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404":
+          description: Caller is not a member of the community and not an admin.
+
+  /api/registrations/{registration}/transition:
+    post:
+      tags: [Registrations]
+      summary: Apply the BR-9 state machine transition
+      parameters:
+        - $ref: "#/components/parameters/RegistrationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [state]
+              properties:
+                state: { $ref: "#/components/schemas/EnergyCommunityMeterPointState" }
+                status_code:
+                  type: integer
+                  nullable: true
+                  description: Required only when transitioning to `error`.
+      responses:
+        "200":
+          description: Transition applied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: "#/components/schemas/Registration" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409":
+          description: BR-8/BR-9 — the transition was never legal from the current state, or the state moved under a concurrent request.
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/registrations/{registration}:
+    delete:
+      tags: [Registrations]
+      summary: End a registration (BR-10) — maps to the appropriate BR-9 transition, never a hard delete
+      parameters:
+        - $ref: "#/components/parameters/RegistrationId"
+      responses:
+        "204": { description: "Ended (deactivated or removed, depending on prior state)" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { description: Already in a terminal state (deactivated or removed) — nothing to transition to. }
+
+  /api/energy-communities/{energyCommunity}/activate:
+    post:
+      tags: [Energy Communities]
+      summary: Activate a community — manager/admin only, from new, needs >=1 accepted generation registration (BR-12)
+      parameters:
+        - $ref: "#/components/parameters/EnergyCommunityId"
+      responses:
+        "200":
+          description: Activated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: "#/components/schemas/EnergyCommunity" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/energy-communities/{energyCommunity}/reject:
+    post:
+      tags: [Energy Communities]
+      summary: Reject a community — manager/admin only, atomic state change + ending every blocking registration (BR-13)
+      parameters:
+        - $ref: "#/components/parameters/EnergyCommunityId"
+      responses:
+        "200":
+          description: Rejected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: "#/components/schemas/EnergyCommunity" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Sanctum personal access token from POST /api/login.
+
+  parameters:
+    EnergyCommunityId:
+      name: energyCommunity
+      in: path
+      required: true
+      schema: { type: integer }
+    RegistrationId:
+      name: registration
+      in: path
+      required: true
+      schema: { type: integer }
+      description: Binds an EnergyCommunityMeterPoint (the registration), not a meter point.
+
+  responses:
+    Unauthenticated:
+      description: Missing or invalid bearer token.
+    Forbidden:
+      description: Authenticated, but lacks the manager/admin role this action requires.
+    ValidationError:
+      description: Validation failed.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message: { type: string }
+              errors:
+                type: object
+                additionalProperties:
+                  type: array
+                  items: { type: string }
+
+  schemas:
+    EnergyDirection:
+      type: string
+      enum: [generation, consumption]
+    EnergyCommunityState:
+      type: string
+      enum: [new, activated, rejected]
+    EnergyCommunityMeterPointState:
+      type: string
+      enum: [new, requested, message_received, accepted, error, removed, deactivated]
+    CommunityRole:
+      type: string
+      enum: [manager, member]
+
+    MeterPoint:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        energy_direction: { $ref: "#/components/schemas/EnergyDirection" }
+        grid_operator_id:
+          type: string
+          description: grid_operators.identifier — not a real FK onto grid_operators.id (see NOTES.md).
+        user_id: { type: integer }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    EnergyCommunity:
+      type: object
+      properties:
+        id: { type: integer }
+        ecid: { type: string }
+        name: { type: string, nullable: true }
+        state: { $ref: "#/components/schemas/EnergyCommunityState" }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    Registration:
+      type: object
+      description: energy_community_meter_point — its own model, not a bare pivot.
+      properties:
+        id: { type: integer }
+        energy_community_id: { type: integer }
+        meter_point_id: { type: integer }
+        state: { $ref: "#/components/schemas/EnergyCommunityMeterPointState" }
+        from_date: { type: string, format: date }
+        to_date: { type: string, format: date, nullable: true }
+        consent_date: { type: string, format: date }
+        status_code: { type: integer, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    MeterPointCollection:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/MeterPoint" }
+        links: { $ref: "#/components/schemas/PaginationLinks" }
+        meta: { $ref: "#/components/schemas/PaginationMeta" }
+
+    EnergyCommunityCollection:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/EnergyCommunity" }
+        links: { $ref: "#/components/schemas/PaginationLinks" }
+        meta: { $ref: "#/components/schemas/PaginationMeta" }
+
+    RegistrationCollection:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Registration" }
+        links: { $ref: "#/components/schemas/PaginationLinks" }
+        meta: { $ref: "#/components/schemas/PaginationMeta" }
+
+    PaginationLinks:
+      type: object
+      properties:
+        first: { type: string, nullable: true }
+        last: { type: string, nullable: true }
+        prev: { type: string, nullable: true }
+        next: { type: string, nullable: true }
+
+    PaginationMeta:
+      type: object
+      properties:
+        current_page: { type: integer }
+        from: { type: integer, nullable: true }
+        last_page: { type: integer }
+        per_page: { type: integer }
+        to: { type: integer, nullable: true }
+        total: { type: integer }

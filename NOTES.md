@@ -13,11 +13,9 @@ built, tested, and pushed. 64 tests, all green, run against real MariaDB (not SQ
   `POST /api/registrations/{id}/transition`, `DELETE /api/registrations/{id}`.
 - **P3**: `POST /api/energy-communities/{id}/activate`,
   `POST /api/energy-communities/{id}/reject`.
-- **OPT**: the `ec:registrations {ecid} {--date=}` Artisan command, and the
-  `accepted`-reached event with its queued listener. The OpenAPI description was
-  deliberately skipped — not for lack of time, a conscious call to spend the remaining
-  time on a domain seeder and a Postman collection instead (not requested by the
-  assignment, but useful for manually exercising the API before submission).
+- **OPT**: all three — the `ec:registrations {ecid} {--date=}` Artisan command, the
+  `accepted`-reached event with its queued listener, and an OpenAPI 3.0.3 description
+  (`openapi.yaml`, all 13 endpoints, validated with `@redocly/cli lint` — 0 errors).
 
 ## Key decisions
 
@@ -128,12 +126,9 @@ surface as 409, not a silent overwrite or a 500.
 
 ## What's missing / what I'd do next, prioritized
 
-1. **OpenAPI description** — the one OPT item not attempted; a conscious trade-off
-   against the seeder/Postman collection and the fresh-clone verification below, not an
-   oversight.
-2. **`meter_points.grid_operator_id`** as a real FK — see the data model section above
+1. **`meter_points.grid_operator_id`** as a real FK — see the data model section above
    for the migration path.
-3. **Larastan** was never installed or run — not in `composer.json`'s dev dependencies by
+2. **Larastan** was never installed or run — not in `composer.json`'s dev dependencies by
    default, and I didn't add it. `Model::shouldBeStrict()` is on outside production
    instead, and it did catch one real bug along the way: `users.is_admin` has a DB-level
    default (`false`) that a freshly-created model doesn't know about until it's re-fetched,
@@ -175,3 +170,12 @@ values, and 3 registrations spanning `new`/`requested`/`accepted`.
 the API with Postman" section) — every request was run once by hand against the seeded
 data to confirm it returns what it claims to before committing it, not just written and
 assumed correct.
+
+## OpenAPI description (OPT)
+
+`openapi.yaml` — OpenAPI 3.0.3, all 13 endpoints, request/response schemas for every
+model and its enums, the domain-specific status codes (409 for a BR-7 overlap or an
+illegal BR-9 transition, the 404-vs-403 visibility/permission split from the "Key
+decisions" section above). Validated with `npx @redocly/cli lint openapi.yaml` — 0
+errors; the remaining warnings are cosmetic (missing `operationId` per endpoint) and
+left as-is.

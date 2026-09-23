@@ -101,6 +101,14 @@ with request bodies that work against the seeded data (`database/seeders/Databas
    (activating a community without an accepted generation registration, BR-12) — that's the
    point, not a bug.
 
+## API description
+
+`openapi.yaml` (OpenAPI 3.0.3) describes all 13 endpoints — request/response schemas,
+auth, and status codes including the domain-specific ones (409 for a BR-7 overlap or an
+illegal BR-9 transition, 404 vs. 403 for visibility vs. permission). Validated with
+`npx @redocly/cli lint openapi.yaml`. Paste it into [Swagger Editor](https://editor.swagger.io)
+or a local Redoc/Swagger UI instance for the interactive rendering.
+
 ## License
 
 Laravel is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
