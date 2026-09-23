@@ -3,7 +3,7 @@
 ## How far I got
 
 All of P1 (Foundation), P2 (Registrations — the core), and P3 (Community lifecycle) are
-built, tested, and pushed. 63 tests, all green, run against real MariaDB (not SQLite) —
+built, tested, and pushed. 64 tests, all green, run against real MariaDB (not SQLite) —
 `make test` / `./vendor/bin/sail test`.
 
 - **P1**: `POST /api/login`, `POST/GET /api/meter-points`,
@@ -81,12 +81,15 @@ The harder case is a meter point's **first** registration — there's no existin
 lock. The guarantee there rests on InnoDB gap locking: `SELECT ... FOR UPDATE` with a
 range condition (`WHERE meter_point_id = ? AND state IN (...)`) places a gap/next-key
 lock on that index range even when it matches zero rows, under MariaDB's default
-REPEATABLE READ isolation. I did not want to just assert this — `tests/Feature/
-RegistrationConcurrencyTest.php` opens a second, independent PDO connection, holds the
-app's exact locking SELECT open in an uncommitted transaction (matching 0 rows), and
-confirms a concurrent INSERT for the same `meter_point_id` from the second connection
-blocks and fails with `Lock wait timeout exceeded` rather than going through. It passes
-on this MariaDB 11 instance.
+REPEATABLE READ isolation.
+
+I did not want to just assert either case — `tests/Feature/RegistrationConcurrencyTest.php`
+has two tests, each opening a second, independent PDO connection and holding the app's
+exact locking SELECT open in an uncommitted transaction on the first one, then confirming
+a concurrent INSERT for the same `meter_point_id` from the second connection blocks and
+fails with `Lock wait timeout exceeded` rather than going through — once against zero
+matching rows (the gap-lock case) and once against one existing accepted registration
+(the standard row-lock case). Both pass on this MariaDB 11 instance.
 
 BR-9 transitions use a different mechanism: an atomic `UPDATE ... WHERE id = ? AND
 state = <state read before the call>`. Zero affected rows means either the state moved
@@ -126,13 +129,14 @@ surface as 409, not a silent overwrite or a 500.
 ## What's missing / what I'd do next, prioritized
 
 1. **OpenAPI description** — the one OPT item not attempted; a conscious trade-off
-   against the seeder/Postman collection, not an oversight.
+   against the seeder/Postman collection and the fresh-clone verification below, not an
+   oversight.
 2. **`meter_points.grid_operator_id`** as a real FK — see the data model section above
    for the migration path.
-3. A second BR-8 concurrency test for the "existing blocking registration" case (the
-   more standard `lockForUpdate()` path) — the first-registration gap-locking case was
-   the one I was actually unsure about, so I spent the time there; the standard row-lock
-   case is lower-risk but still untested end-to-end under real concurrency.
+3. ~~A second BR-8 concurrency test for the "existing blocking registration" case.~~
+   Done: `RegistrationConcurrencyTest` now covers both the gap-lock case (a meter
+   point's first registration) and the standard row-lock case (an existing accepted
+   registration already there).
 4. ~~Pint run and a final `php artisan test` pass before packaging.~~ Done: Pint fixed
    two files (an unused import, some formatting), all tests still pass afterwards.
    Laravel's default boilerplate tests (`tests/Feature/ExampleTest.php`,
@@ -141,6 +145,22 @@ surface as 409, not a silent overwrite or a 500.
    default, and I didn't add it. `Model::shouldBeStrict()` is on outside production, which
    caught at least one real bug during development (see the `users.is_admin` note in
    `Overview.md`), but that's a runtime check, not static analysis.
+
+## The submission checklist's clean-state requirement — actually verified, not assumed
+
+"`composer install && php artisan migrate --seed && php artisan test` works from a clean
+state" is easy to get wrong when a long-running dev container accumulates state that a
+fresh checkout won't have. I cloned the pushed repo into a scratch directory (not this
+working copy) and ran through exactly that sequence — it caught a real bug:
+`phpunit.xml` referenced `tests/Unit`, which locally still existed as an empty directory
+after `tests/Unit/ExampleTest.php` was deleted, but git doesn't track empty directories,
+so a genuinely fresh clone never had it at all. `php artisan test` failed immediately
+with "Test directory tests/Unit not found," before a single test ran — which would have
+sunk the whole test suite in review despite 63 passing tests in my own environment.
+Fixed by dropping the empty `Unit` testsuite from `phpunit.xml` (there are no unit tests
+in this project; everything is a Feature test against the real API). Re-verified against
+the same fresh clone afterwards — 64/64 passing (two more than the number above once the
+second BR-8 concurrency test landed).
 
 ## Seeder and Postman collection (not requested by the assignment)
 
