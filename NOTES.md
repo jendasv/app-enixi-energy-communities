@@ -56,6 +56,12 @@ unchanged from the assignment's strings.
 **No API versioning** (`/api/...`, not `/api/v1/...`) — the assignment gives exact,
 unversioned paths throughout.
 
+**Tests: PHPUnit, not Pest.** The assignment says the framework is my choice and names
+Pest only as what the team happens to use internally. Everything here is a standard
+Laravel Feature test (`assertOk()`, `assertJsonPath()`, ...); converting to Pest later
+would be a mechanical, low-risk change if that matters for consistency with the codebase
+this joins.
+
 **Auth**: Sanctum personal access tokens (`POST /api/login` returns a `plainTextToken`),
 not SPA/cookie auth — matches the P1 table's "e-mail + password → token" literally, and
 this is a pure JSON API with no first-party SPA client.
