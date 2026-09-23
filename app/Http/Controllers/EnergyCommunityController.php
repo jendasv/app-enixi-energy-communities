@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\RejectEnergyCommunity;
 use App\Enums\CommunityRole;
 use App\Enums\EnergyCommunityState;
+use App\Http\Requests\ActivateEnergyCommunityRequest;
 use App\Http\Requests\AddEnergyCommunityUserRequest;
+use App\Http\Requests\RejectEnergyCommunityRequest;
 use App\Http\Requests\StoreEnergyCommunityRequest;
 use App\Http\Resources\EnergyCommunityResource;
 use App\Models\EnergyCommunity;
@@ -91,5 +94,29 @@ class EnergyCommunityController extends Controller
         ]);
 
         return response()->json(['message' => 'User added to the community.'], 201);
+    }
+
+    /**
+     * POST /api/energy-communities/{energyCommunity}/activate — BR-12.
+     */
+    public function activate(ActivateEnergyCommunityRequest $request, EnergyCommunity $energyCommunity): EnergyCommunityResource
+    {
+        $energyCommunity->update(['state' => EnergyCommunityState::Activated]);
+
+        return new EnergyCommunityResource($energyCommunity);
+    }
+
+    /**
+     * POST /api/energy-communities/{energyCommunity}/reject — BR-13,
+     * atomic: state change plus ending every blocking registration.
+     */
+    public function reject(
+        RejectEnergyCommunityRequest $request,
+        EnergyCommunity $energyCommunity,
+        RejectEnergyCommunity $action,
+    ): EnergyCommunityResource {
+        $energyCommunity = $action->handle($energyCommunity);
+
+        return new EnergyCommunityResource($energyCommunity);
     }
 }

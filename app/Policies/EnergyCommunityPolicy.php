@@ -40,6 +40,25 @@ class EnergyCommunityPolicy
         return $this->isManager($user, $energyCommunity);
     }
 
+    /**
+     * BR-12: only a manager of the community (or an admin) may activate it.
+     * The "from new, with >=1 accepted generation registration" part is a
+     * state precondition, not authorization — it lives in
+     * ActivateEnergyCommunityRequest instead.
+     */
+    public function activate(User $user, EnergyCommunity $energyCommunity): bool
+    {
+        return $this->isManager($user, $energyCommunity);
+    }
+
+    /**
+     * BR-13: only a manager of the community (or an admin) may reject it.
+     */
+    public function reject(User $user, EnergyCommunity $energyCommunity): bool
+    {
+        return $this->isManager($user, $energyCommunity);
+    }
+
     private function isManager(User $user, EnergyCommunity $energyCommunity): bool
     {
         return $user->is_admin || $energyCommunity->users()

@@ -21,4 +21,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/energy-communities/{energyCommunity}/meter-points', [RegistrationController::class, 'index']);
     Route::post('/registrations/{registration}/transition', [RegistrationController::class, 'transition']);
     Route::delete('/registrations/{registration}', [RegistrationController::class, 'destroy']);
+
+    Route::post('/energy-communities/{energyCommunity}/activate', [EnergyCommunityController::class, 'activate']);
+    Route::post('/energy-communities/{energyCommunity}/reject', [EnergyCommunityController::class, 'reject']);
 });
