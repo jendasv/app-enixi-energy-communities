@@ -66,7 +66,7 @@ class RegistrationAcceptedEventTest extends TestCase
 
     public function test_the_listener_is_queued(): void
     {
-        $this->assertInstanceOf(ShouldQueue::class, new NotifyMeterPointOwnerOfAcceptedRegistration());
+        $this->assertInstanceOf(ShouldQueue::class, new NotifyMeterPointOwnerOfAcceptedRegistration);
     }
 
     public function test_the_listener_logs_the_owner_it_would_notify(): void
@@ -80,7 +80,7 @@ class RegistrationAcceptedEventTest extends TestCase
                     && $context['registration_id'] === $registration->id),
             );
 
-        (new NotifyMeterPointOwnerOfAcceptedRegistration())
+        (new NotifyMeterPointOwnerOfAcceptedRegistration)
             ->handle(new MeterPointRegistrationAccepted($registration));
     }
 }
