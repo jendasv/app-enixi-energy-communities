@@ -3,7 +3,7 @@
 ## How far I got
 
 All of P1 (Foundation), P2 (Registrations — the core), and P3 (Community lifecycle) are
-built, tested, and pushed. 64 tests, all green, run against real MariaDB (not SQLite) —
+built, tested, and pushed. 66 tests, all green, run against real MariaDB (not SQLite) —
 `make test` / `./vendor/bin/sail test`.
 
 - **P1**: `POST /api/login`, `POST/GET /api/meter-points`,
@@ -99,6 +99,70 @@ BR-9 transitions use a different mechanism: an atomic `UPDATE ... WHERE id = ? A
 state = <state read before the call>`. Zero affected rows means either the state moved
 under the caller or the transition was never legal from the state they read — both
 surface as 409, not a silent overwrite or a 500.
+
+## Query efficiency and data integrity — measured, not guessed
+
+Went through every endpoint with `DB::enableQueryLog()` (a throwaway diagnostic test,
+not kept) instead of eyeballing the code for N+1s. Found and fixed three real issues:
+
+- **`POST .../meter-points` (registration): 8 → 7 queries.** The controller called
+  `MeterPoint::findOrFail()` for a row the Form Request had already fetched via its own
+  memoized `meterPoint()` (used for the BR-6 membership check). Controller now reuses
+  that instance instead of querying it twice.
+- **`POST .../transition` and `DELETE .../{registration}`: 6 → 4 queries each.**
+  `EnergyCommunityMeterPointPolicy::transition()` accessed `$registration->energyCommunity`
+  as a property — that lazy-loads *and caches* the relation on the model.
+  `TransitionRegistration::handle()` then calls `->refresh()`, which reloads every
+  already-cached relation along with the row itself (that's how Eloquent's `refresh()`
+  works), silently re-querying `energy_communities` a second time for a value nothing
+  after that point uses. Rewritten to query the `energy_community_user` pivot table
+  directly — one query, nothing left cached to redundantly reload.
+- **All three paginated list endpoints had no explicit `ORDER BY`.** Without one, row
+  order across pages isn't guaranteed stable between separate `SELECT`s — under
+  concurrent writes, a client paging through results can see a row twice or miss one
+  entirely. Added `->orderBy('id')` to all three.
+
+Also found two unhandled `UniqueConstraintViolationException` races —
+`StoreEnergyCommunityRequest`'s `ecid` uniqueness and `AddEnergyCommunityUserRequest`'s
+scoped `user_id` uniqueness both had the same "two concurrent requests can pass the
+`unique` validation rule before either writes" gap that `MeterPointController::store()`
+already guarded against; the other two controllers didn't, meaning that race would have
+surfaced as a raw 500, not a 422. Both now follow the same catch-and-convert pattern.
+`UniqueConstraintRaceTest` proves MariaDB throws Laravel's typed exception for both
+cases — it does not claim to prove the microsecond TOCTOU window is closed end-to-end
+(that would need to interleave a write between this app's own validation query and its
+own insert *inside one request*, which a synchronous test can't do without instrumenting
+the app itself, unlike BR-8's test which genuinely interleaves two real connections
+around a lock).
+
+**Index check, not assumption**: `energy_community_meter_point` had `(meter_point_id,
+state)` for BR-7's overlap check, but `RejectEnergyCommunity` and the
+community-registrations list both filter by `(energy_community_id, state)` instead,
+which only had a single-column index on `energy_community_id` (from the FK).
+`EXPLAIN` confirmed MariaDB was narrowing to the community via that index, then
+filtering `state` without index support (`type: ref`, `Using where`). Added a matching
+composite index; `EXPLAIN` afterward shows `type: range`, `Using index condition` — the
+state filter now happens in the index itself.
+
+**Where this doesn't scale as cleanly, by design or by not-yet-needed effort**:
+
+- `RejectEnergyCommunity` issues one `UPDATE` per blocking registration in a loop
+  inside one transaction, not a batch update — correct (each needs its own atomic
+  conditional write per BR-8's reasoning) but means a community with very many blocking
+  registrations holds those row locks for longer, serially. Realistic community sizes
+  keep this small; a community with thousands of live registrations would be the point
+  to reconsider batching.
+- Pagination is offset-based (Laravel's default), which gets slower for later pages on
+  large tables — the project conventions explicitly flag cursor pagination as worth
+  considering for that case. Not implemented; the tables here stay naturally small per
+  scope (a user's own metering points, a single community's registrations), so it isn't
+  the current bottleneck, but it's the first thing to revisit if that assumption stops
+  holding.
+- `lockForUpdate()` on a metering point's blocking registrations serializes concurrent
+  registration attempts *for that one metering point* — by design, that's the BR-8
+  guarantee. It does not serialize writes across different metering points, so
+  throughput scales with the number of distinct metering points being registered
+  concurrently, not with total registration volume.
 
 ## Where I deviated from the document, and why
 
