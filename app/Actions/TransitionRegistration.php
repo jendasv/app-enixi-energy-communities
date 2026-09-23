@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\Enums\EnergyCommunityMeterPointState;
+use App\Events\MeterPointRegistrationAccepted;
 use App\Models\EnergyCommunityMeterPoint;
 use Carbon\CarbonImmutable;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
@@ -45,7 +46,13 @@ class TransitionRegistration
             );
         }
 
-        return $registration->refresh();
+        $registration = $registration->refresh();
+
+        if ($target === EnergyCommunityMeterPointState::Accepted) {
+            MeterPointRegistrationAccepted::dispatch($registration);
+        }
+
+        return $registration;
     }
 
     /**
