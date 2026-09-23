@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "3d8b6a2e-1f4c-4a9e-8b7a-6e5d4c3b2a10",
 		"name": "Energy Communities API",
-		"description": "Enixi Laravel challenge. Import this collection together with the matching environment file, run `make install` first so the seeded data (see database/seeders/DatabaseSeeder.php) exists, then run the four \"Login as ...\" requests once each — their test scripts write the returned token into the environment. Every other request references a role-specific {{..._token}} variable and IDs from the seeded dataset.",
+		"description": "Enixi Laravel challenge. Import this collection together with the matching environment file, run `make install` first so the seeded data (see database/seeders/DatabaseSeeder.php) exists, then run the four \"Login as ...\" requests once each \u2014 their test scripts write the returned token into the environment. Every other request references a role-specific {{..._token}} variable and IDs from the seeded dataset.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -30,14 +30,34 @@
 					"request": {
 						"method": "POST",
 						"header": [
-							{ "key": "Content-Type", "value": "application/json" },
-							{ "key": "Accept", "value": "application/json" }
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"password\"\n}"
+							"raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"password\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
-						"url": { "raw": "{{base_url}}/api/login", "host": ["{{base_url}}"], "path": ["api", "login"] }
+						"url": {
+							"raw": "{{base_url}}/api/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"login"
+							]
+						}
 					}
 				},
 				{
@@ -61,14 +81,34 @@
 					"request": {
 						"method": "POST",
 						"header": [
-							{ "key": "Content-Type", "value": "application/json" },
-							{ "key": "Accept", "value": "application/json" }
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"manager@example.com\",\n    \"password\": \"password\"\n}"
+							"raw": "{\n    \"email\": \"manager@example.com\",\n    \"password\": \"password\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
-						"url": { "raw": "{{base_url}}/api/login", "host": ["{{base_url}}"], "path": ["api", "login"] }
+						"url": {
+							"raw": "{{base_url}}/api/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"login"
+							]
+						}
 					}
 				},
 				{
@@ -92,14 +132,34 @@
 					"request": {
 						"method": "POST",
 						"header": [
-							{ "key": "Content-Type", "value": "application/json" },
-							{ "key": "Accept", "value": "application/json" }
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"member@example.com\",\n    \"password\": \"password\"\n}"
+							"raw": "{\n    \"email\": \"member@example.com\",\n    \"password\": \"password\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
-						"url": { "raw": "{{base_url}}/api/login", "host": ["{{base_url}}"], "path": ["api", "login"] }
+						"url": {
+							"raw": "{{base_url}}/api/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"login"
+							]
+						}
 					}
 				},
 				{
@@ -123,14 +183,34 @@
 					"request": {
 						"method": "POST",
 						"header": [
-							{ "key": "Content-Type", "value": "application/json" },
-							{ "key": "Accept", "value": "application/json" }
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"owner@example.com\",\n    \"password\": \"password\"\n}"
+							"raw": "{\n    \"email\": \"owner@example.com\",\n    \"password\": \"password\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
-						"url": { "raw": "{{base_url}}/api/login", "host": ["{{base_url}}"], "path": ["api", "login"] }
+						"url": {
+							"raw": "{{base_url}}/api/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"login"
+							]
+						}
 					}
 				}
 			]
@@ -143,15 +223,38 @@
 					"request": {
 						"method": "POST",
 						"header": [
-							{ "key": "Content-Type", "value": "application/json" },
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Authorization", "value": "Bearer {{owner_token}}" }
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{owner_token}}"
+							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"AT0030000000000000000000004711003\",\n    \"energy_direction\": \"consumption\"\n}"
+							"raw": "{\n    \"name\": \"AT0030000000000000000000004711003\",\n    \"energy_direction\": \"consumption\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
-						"url": { "raw": "{{base_url}}/api/meter-points", "host": ["{{base_url}}"], "path": ["api", "meter-points"] },
+						"url": {
+							"raw": "{{base_url}}/api/meter-points",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"meter-points"
+							]
+						},
 						"description": "BR-1: name must be exactly 33 chars, uppercase+digits, first 8 chars a known grid operator identifier (AT003000 is seeded)."
 					}
 				},
@@ -160,10 +263,25 @@
 					"request": {
 						"method": "GET",
 						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Authorization", "value": "Bearer {{owner_token}}" }
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{owner_token}}"
+							}
 						],
-						"url": { "raw": "{{base_url}}/api/meter-points", "host": ["{{base_url}}"], "path": ["api", "meter-points"] }
+						"url": {
+							"raw": "{{base_url}}/api/meter-points",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"meter-points"
+							]
+						}
 					}
 				},
 				{
@@ -171,14 +289,30 @@
 					"request": {
 						"method": "GET",
 						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Authorization", "value": "Bearer {{admin_token}}" }
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
 						],
 						"url": {
 							"raw": "{{base_url}}/api/meter-points?energy_direction=generation",
-							"host": ["{{base_url}}"],
-							"path": ["api", "meter-points"],
-							"query": [{ "key": "energy_direction", "value": "generation" }]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"meter-points"
+							],
+							"query": [
+								{
+									"key": "energy_direction",
+									"value": "generation"
+								}
+							]
 						},
 						"description": "Admin sees all metering points regardless of owner; filterable by energy_direction."
 					}
@@ -193,15 +327,38 @@
 					"request": {
 						"method": "POST",
 						"header": [
-							{ "key": "Content-Type", "value": "application/json" },
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Authorization", "value": "Bearer {{manager_token}}" }
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{manager_token}}"
+							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"ecid\": \"AT00700009020GC999004000000000001\",\n    \"name\": \"New Test Community\"\n}"
+							"raw": "{\n    \"ecid\": \"AT00700009020GC999004000000000001\",\n    \"name\": \"New Test Community\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
-						"url": { "raw": "{{base_url}}/api/energy-communities", "host": ["{{base_url}}"], "path": ["api", "energy-communities"] },
+						"url": {
+							"raw": "{{base_url}}/api/energy-communities",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"energy-communities"
+							]
+						},
 						"description": "BR-3: the caller becomes manager atomically, state starts at new."
 					}
 				},
@@ -210,78 +367,152 @@
 					"request": {
 						"method": "GET",
 						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Authorization", "value": "Bearer {{manager_token}}" }
-						],
-						"url": { "raw": "{{base_url}}/api/energy-communities", "host": ["{{base_url}}"], "path": ["api", "energy-communities"] }
-					}
-				},
-				{
-					"name": "Show Community — Waldviertel Nord (Manager)",
-					"request": {
-						"method": "GET",
-						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Authorization", "value": "Bearer {{manager_token}}" }
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{manager_token}}"
+							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/energy-communities/{{energy_community_waldviertel_id}}",
-							"host": ["{{base_url}}"],
-							"path": ["api", "energy-communities", "{{energy_community_waldviertel_id}}"]
+							"raw": "{{base_url}}/api/energy-communities",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"energy-communities"
+							]
 						}
 					}
 				},
 				{
-					"name": "Add User to Community — Sonnenweide (Manager)",
+					"name": "Show Community \u2014 Waldviertel Nord (Manager)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{manager_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/energy-communities/{{energy_community_waldviertel_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"energy-communities",
+								"{{energy_community_waldviertel_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Add User to Community \u2014 Sonnenweide (Manager)",
 					"request": {
 						"method": "POST",
 						"header": [
-							{ "key": "Content-Type", "value": "application/json" },
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Authorization", "value": "Bearer {{manager_token}}" }
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{manager_token}}"
+							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"user_id\": {{member_user_id}},\n    \"role\": \"member\"\n}"
+							"raw": "{\n    \"user_id\": {{member_user_id}},\n    \"role\": \"member\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/api/energy-communities/{{energy_community_sonnenweide_id}}/users",
-							"host": ["{{base_url}}"],
-							"path": ["api", "energy-communities", "{{energy_community_sonnenweide_id}}", "users"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"energy-communities",
+								"{{energy_community_sonnenweide_id}}",
+								"users"
+							]
 						},
 						"description": "BR-4: manager/admin only."
 					}
 				},
 				{
-					"name": "Activate Community — Sonnenweide, expect 422 (Manager)",
+					"name": "Activate Community \u2014 Sonnenweide, expect 422 (Manager)",
 					"request": {
 						"method": "POST",
 						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Authorization", "value": "Bearer {{manager_token}}" }
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{manager_token}}"
+							}
 						],
 						"url": {
 							"raw": "{{base_url}}/api/energy-communities/{{energy_community_sonnenweide_id}}/activate",
-							"host": ["{{base_url}}"],
-							"path": ["api", "energy-communities", "{{energy_community_sonnenweide_id}}", "activate"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"energy-communities",
+								"{{energy_community_sonnenweide_id}}",
+								"activate"
+							]
 						},
-						"description": "BR-12: fails as seeded — Sonnenweide's only registration is still `new`, not an accepted generation registration. Accept the registration first (see Registrations folder) to see this succeed instead."
+						"description": "BR-12: fails as seeded \u2014 Sonnenweide's only registration is still `new`, not an accepted generation registration. Accept the registration first (see Registrations folder) to see this succeed instead."
 					}
 				},
 				{
-					"name": "Reject Community — Sonnenweide (Manager)",
+					"name": "Reject Community \u2014 Sonnenweide (Manager)",
 					"request": {
 						"method": "POST",
 						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Authorization", "value": "Bearer {{manager_token}}" }
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{manager_token}}"
+							}
 						],
 						"url": {
 							"raw": "{{base_url}}/api/energy-communities/{{energy_community_sonnenweide_id}}/reject",
-							"host": ["{{base_url}}"],
-							"path": ["api", "energy-communities", "{{energy_community_sonnenweide_id}}", "reject"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"energy-communities",
+								"{{energy_community_sonnenweide_id}}",
+								"reject"
+							]
 						},
-						"description": "BR-13: atomic — state becomes rejected and every blocking registration in it is ended."
+						"description": "BR-13: atomic \u2014 state becomes rejected and every blocking registration in it is ended."
 					}
 				}
 			]
@@ -294,20 +525,41 @@
 					"request": {
 						"method": "POST",
 						"header": [
-							{ "key": "Content-Type", "value": "application/json" },
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Authorization", "value": "Bearer {{manager_token}}" }
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{manager_token}}"
+							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"meter_point_id\": {{meter_point_managers_generation_id}},\n    \"from_date\": \"2024-01-01\",\n    \"to_date\": \"2024-02-28\",\n    \"consent_date\": \"2023-12-20\"\n}"
+							"raw": "{\n    \"meter_point_id\": {{meter_point_managers_generation_id}},\n    \"from_date\": \"2024-01-01\",\n    \"to_date\": \"2024-02-28\",\n    \"consent_date\": \"2023-12-20\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/api/energy-communities/{{energy_community_waldviertel_id}}/meter-points",
-							"host": ["{{base_url}}"],
-							"path": ["api", "energy-communities", "{{energy_community_waldviertel_id}}", "meter-points"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"energy-communities",
+								"{{energy_community_waldviertel_id}}",
+								"meter-points"
+							]
 						},
-						"description": "BR-5 through BR-8. The manager's own generation metering point, registered into Waldviertel Nord. This period (2024-01-01..2024-02-28) is deliberately entirely before the meter point's existing open-ended registration in Sonnenweide (from 2026-03-01) — BR-7 blocks any overlapping period for the same metering point across communities, so try an overlapping from_date (e.g. 2026-04-01) to see the 409 instead."
+						"description": "BR-5 through BR-8. The manager's own generation metering point, registered into Waldviertel Nord. This period (2024-01-01..2024-02-28) is deliberately entirely before the meter point's existing open-ended registration in Sonnenweide (from 2026-03-01) \u2014 BR-7 blocks any overlapping period for the same metering point across communities, so try an overlapping from_date (e.g. 2026-04-01) to see the 409 instead."
 					}
 				},
 				{
@@ -315,34 +567,73 @@
 					"request": {
 						"method": "GET",
 						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Authorization", "value": "Bearer {{manager_token}}" }
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{manager_token}}"
+							}
 						],
 						"url": {
 							"raw": "{{base_url}}/api/energy-communities/{{energy_community_waldviertel_id}}/meter-points?state=accepted",
-							"host": ["{{base_url}}"],
-							"path": ["api", "energy-communities", "{{energy_community_waldviertel_id}}", "meter-points"],
-							"query": [{ "key": "state", "value": "accepted" }]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"energy-communities",
+								"{{energy_community_waldviertel_id}}",
+								"meter-points"
+							],
+							"query": [
+								{
+									"key": "state",
+									"value": "accepted"
+								}
+							]
 						}
 					}
 				},
 				{
-					"name": "Transition House Registration — requested → message_received (Manager)",
+					"name": "Transition House Registration \u2014 requested \u2192 message_received (Manager)",
 					"request": {
 						"method": "POST",
 						"header": [
-							{ "key": "Content-Type", "value": "application/json" },
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Authorization", "value": "Bearer {{manager_token}}" }
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{manager_token}}"
+							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"state\": \"message_received\"\n}"
+							"raw": "{\n    \"state\": \"message_received\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/api/registrations/{{registration_house_requested_id}}/transition",
-							"host": ["{{base_url}}"],
-							"path": ["api", "registrations", "{{registration_house_requested_id}}", "transition"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"registrations",
+								"{{registration_house_requested_id}}",
+								"transition"
+							]
 						},
 						"description": "BR-9. The seeded house registration starts in `requested`; this is a legal next step. Try `{\"state\": \"accepted\"}` instead to see the illegal-transition 422."
 					}
@@ -352,13 +643,25 @@
 					"request": {
 						"method": "DELETE",
 						"header": [
-							{ "key": "Accept", "value": "application/json" },
-							{ "key": "Authorization", "value": "Bearer {{manager_token}}" }
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{manager_token}}"
+							}
 						],
 						"url": {
 							"raw": "{{base_url}}/api/registrations/{{registration_managers_new_id}}",
-							"host": ["{{base_url}}"],
-							"path": ["api", "registrations", "{{registration_managers_new_id}}"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"registrations",
+								"{{registration_managers_new_id}}"
+							]
 						},
 						"description": "BR-10: never hard-deleted. This registration is `new`, so it maps to `removed`."
 					}
