@@ -26,6 +26,22 @@ class EnergyCommunityPolicy
      */
     public function addUser(User $user, EnergyCommunity $energyCommunity): bool
     {
+        return $this->isManager($user, $energyCommunity);
+    }
+
+    /**
+     * BR-5: only a manager of the community (or an admin) may register a
+     * metering point into it. The "new or activated, never rejected" part
+     * of BR-5 is a state check, not an authorization one — it lives in
+     * RegisterMeterPointRequest instead.
+     */
+    public function registerMeterPoint(User $user, EnergyCommunity $energyCommunity): bool
+    {
+        return $this->isManager($user, $energyCommunity);
+    }
+
+    private function isManager(User $user, EnergyCommunity $energyCommunity): bool
+    {
         return $user->is_admin || $energyCommunity->users()
             ->whereKey($user->id)
             ->wherePivot('role', CommunityRole::Manager)

@@ -52,4 +52,18 @@ enum EnergyCommunityMeterPointState: string
     {
         return in_array($target, $this->allowedTransitions(), strict: true);
     }
+
+    /**
+     * BR-10: "deleting" a registration maps to whichever BR-9 transition
+     * ends its current state. Null means already terminal — nothing to
+     * transition to.
+     */
+    public function deletionTarget(): ?self
+    {
+        return match ($this) {
+            self::Accepted => self::Deactivated,
+            self::New, self::Requested, self::MessageReceived, self::Error => self::Removed,
+            self::Deactivated, self::Removed => null,
+        };
+    }
 }
